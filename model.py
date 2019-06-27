@@ -12,6 +12,8 @@ db = SQLAlchemy()
 ##############################################################################
 # Model definitions
 
+# Model definitions
+
 class User(db.Model):
     """User of ratings website."""
 
@@ -23,50 +25,61 @@ class User(db.Model):
     age = db.Column(db.Integer, nullable=True)
     zipcode = db.Column(db.String(15), nullable=True)
 
-
     def __repr__(self):
-
-        f"""Provide helpful representation when printed."""
+        """Provide helpful representation when printed."""
 
         return f"<User user_id={self.user_id} email={self.email}>"
 
 
-# Put your Movie and Rating model classes here.
-
 class Movie(db.Model):
-    """Movie info"""
+    """Movie on ratings website."""
 
     __tablename__ = "movies"
 
     movie_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    title = db.Column(db.Text, nullable=False)
-    released_at = db.Column(db.DateTime, nullable=False)
-    imdb_url = db.Column(db.Text, nullable=True)
+    title = db.Column(db.String(100))
+    released_at = db.Column(db.DateTime)
+    imdb_url = db.Column(db.String(200))
 
+    def __repr__(self):
+        """Provide helpful representation when printed."""
 
+        return f"<Movie movie_id={self.movie_id} title={self.title}>"
 
 
 class Rating(db.Model):
-    """Movie Rating"""
+    """Rating of a movie by a user."""
 
     __tablename__ = "ratings"
 
     rating_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    movie_id = db.Column(db.Integer, nullable=False)
-    user_id = db.Column(db.Integer, nullable=False)
-    score = db.Column(db.Integer, nullable=False)
+    movie_id = db.Column(db.Integer, db.ForeignKey('movies.movie_id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
+    score = db.Column(db.Integer)
 
 
+     # Define relationship to user
+    user = db.relationship("User", backref=db.backref("ratings", order_by=rating_id))
+
+        # Define relationship to movie
+    movie = db.relationship("Movie", backref=db.backref("ratings", order_by=rating_id))
+
+    def __repr__(self):
+        """Provide helpful representation when printed."""
+
+        return f"""<Rating rating_id={self.rating_id} 
+                   movie_id={self.movie_id} 
+                   user_id={self.user_id} 
+                   score={self.score}>"""
 
 
-
-##############################################################################
+#####################################################################
 # Helper functions
 
 def connect_to_db(app):
     """Connect the database to our Flask app."""
 
-    # Configure to use our PstgreSQL database
+    # Configure to use our PostgreSQL database
     app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///ratings'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.app = app
@@ -74,8 +87,9 @@ def connect_to_db(app):
 
 
 if __name__ == "__main__":
-    # As a convenience, if we run this module interactively, it will leave
-    # you in a state of being able to work with the database directly.
+    # As a convenience, if we run this module interactively, it will
+    # leave you in a state of being able to work with the database
+    # directly.
 
     from server import app
     connect_to_db(app)

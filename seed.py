@@ -21,8 +21,7 @@ def load_users(user_filename):
         row = row.rstrip()
         user_id, age, gender, occupation, zipcode = row.split("|")
 
-        user = User(age=age,
-                    zipcode=zipcode)
+        user = User(age=age, zipcode=zipcode)
 
         # We need to add to the session or it won't ever be stored
         db.session.add(user)
